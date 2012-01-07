@@ -39,7 +39,7 @@ sub load_plugin {
         *{"${class}::${dest_meth}"} = *{"${pkg}::$meth"};
     }
 
-    $pkg->init($pkg) if $pkg->can('init');
+    $pkg->init($class) if $pkg->can('init');
 }
 
 sub new {
