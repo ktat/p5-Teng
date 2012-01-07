@@ -16,9 +16,14 @@ sub search_with_pager {
     my $page = $opt->{page};
     my $rows = $opt->{rows};
 
+    my $columns = $opt->{'+columns'}
+        ? [@{$table->{columns}}, @{$opt->{'+columns'}}]
+        : ($opt->{columns} || $table->{columns})
+    ;
+
     my ($sql, @binds) = $self->sql_builder->select(
         $table_name,
-        $table->columns,
+        $columns,
         $where,
         +{
             %$opt,
@@ -36,6 +41,7 @@ sub search_with_pager {
         sth              => $sth,
         sql              => $sql,
         row_class        => $self->schema->get_row_class($table_name),
+        table            => $table,
         table_name       => $table_name,
         suppress_object_creation => $self->suppress_row_objects,
     );

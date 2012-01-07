@@ -43,7 +43,9 @@ subtest 'update row' => sub {
     $name->name('perl');
     my $foo = $row->foo;
     $foo->name('perl');
+
     $row->update({ name => $name, foo => $foo });
+
     isa_ok $row->name, 'Mock::Inflate::Name';
     is $row->name->name, 'perl';
     isa_ok $row->foo, 'Mock::Inflate::Name';

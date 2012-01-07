@@ -1,5 +1,39 @@
 Revision history for Perl extension Teng
 
+0.14_04
+        - support '+columns' for single, search, lookup and search_with_pager. (thanks nihen)
+        - changed calling way of sql_builder in Teng::Plugin::Count. (thanks makamaka)
+        - sort lookup keys, because anytime make same SQL. (thanks nihen)
+        - FIXED: fail at reconnect twice. (thanks nihen)
+        - FIXED: Lookup Plugin fail at multiple key. (thanks nihen)
+
+0.14_03
+        - bsd tar sucks! use gnu tar for packaging.
+
+0.14_02
+        - Schema::Loader auto create teng class.
+
+0.14_01
+        - [IMPORTANT] bulk_insert include core feature. do not use Plugin::BulkInsert.
+        - add Plugin::Lookup.
+        - fixed fork safe connection. (thanks nihen)
+        - support auto reconnect dbh. (thanks nihen)
+        - can specific column for single or search method.
+        - support bulk_insert for postgresql 8.2.0 over. (thanks makamaka)
+        - support bind_param. (thanks makamaka)
+        - add Plugin::SingleBySQL. (thanks nihen)
+
+0.14
+        - fixed deflate bug. (thanks kentaro)
+
+0.13
+        - fixed inflate bug. (thanks kentaro)
+        - fixed DBD::SQLite test case. (thanks charsbar)
+        - tuning single method.
+
+0.12
+        - fixed some documents.(thanks hiratara)
+
 0.11
     2011-05-15
         - following SQL::Maker 0.14.

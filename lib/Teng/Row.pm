@@ -7,13 +7,16 @@ our $AUTOLOAD;
 sub new {
     my ($class, $args) = @_;
 
-    bless {
-        select_columns     => [keys %{$args->{row_data}}],
-        table              => $args->{teng}->schema->get_table($args->{table_name}),
+    my $self = bless {
         _get_column_cached => {},
         _dirty_columns     => {},
         %$args,
     }, $class;
+
+    $self->{select_columns} ||= [keys %{$args->{row_data}}];
+    $self->{table} ||= $args->{teng}->schema->get_table($args->{table_name});
+
+    $self;
 }
 
 sub _lazy_get_data {
@@ -68,7 +71,7 @@ sub set_column {
     }
 
     $self->{row_data}->{$col} = $val;
-    $self->{_get_column_cached}->{$col} = $val;
+    delete $self->{_get_column_cached}->{$col};
     $self->{_dirty_columns}->{$col} = 1;
 }
 
@@ -96,13 +99,24 @@ sub update {
         Carp::croak q{can't update from basic Teng::Row class.};
     }
 
-    my $where = $self->_where_cond($self->{table_name});
+    my $table      = $self->{table};
+    my $table_name = $self->{table_name};
+    if (! $table) {
+        Carp::croak( "Table definition for $table_name does not exist (Did you declare it in our schema?)" );
+    }
+
+    for my $col (keys %{$upd}) {
+       $upd->{$col} = $table->call_deflate($col, $upd->{$col});
+    }
+
+    my $where = $self->_where_cond;
     $self->set_columns($upd);
 
     $upd = $self->get_dirty_columns;
     return 0 unless %$upd;
 
-    my $result = $self->{teng}->update($self->{table_name}, $self->get_dirty_columns, $where);
+    my $bind_args = $self->{teng}->_bind_sql_type_to_args($table, $upd);
+    my $result = $self->{teng}->_update($table_name, $bind_args, $where, 1);
     $self->{_dirty_columns} = {};
 
     $result;
@@ -115,18 +129,19 @@ sub delete {
         Carp::croak q{can't delete from basic Teng::Row class.};
     }
 
-    $self->{teng}->delete($self->{table_name}, $self->_where_cond($self->{table_name}));
+    $self->{teng}->delete($self->{table_name}, $self->_where_cond);
 }
 
 sub refetch {
     my $self = shift;
-    $self->{teng}->single($self->{table_name}, $self->_where_cond($self->{table_name}));
+    $self->{teng}->single($self->{table_name}, $self->_where_cond);
 }
 
 sub _where_cond {
-    my ($self, $table_name) = @_;
+    my $self = shift;
 
-    my $table = $self->{teng}->schema->get_table( $table_name );
+    my $table      = $self->{table};
+    my $table_name = $self->{table_name};
     unless ($table) {
         Carp::croak("Unknown table: $table_name");
     }

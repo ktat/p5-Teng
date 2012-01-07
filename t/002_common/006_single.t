@@ -16,6 +16,32 @@ subtest 'single' => sub {
     isa_ok $row, 'Teng::Row';
     is $row->id, 1;
     is $row->name, 'perl';
+    is_deeply $row->get_columns, +{
+        id        => 1,
+        name      => 'perl',
+        delete_fg => 0,
+    };
+};
+
+subtest 'single / specific column' => sub {
+    my $row = $db->single('mock_basic',{id => 1},+{columns => [qw/id/]});
+    isa_ok $row, 'Teng::Row';
+    is $row->id, 1;
+    is_deeply $row->get_columns, +{
+        id   => 1,
+    };
+};
+
+subtest 'single / specific +column' => sub {
+    my $row = $db->single('mock_basic',{id => 1},+{'+columns' => [\'id+20 as calc']});
+    isa_ok $row, 'Teng::Row';
+    is $row->id, 1;
+    is_deeply $row->get_columns, +{
+        id        => 1,
+        name      => 'perl',
+        delete_fg => 0,
+        calc      => 21,
+    };
 };
 
 done_testing;
